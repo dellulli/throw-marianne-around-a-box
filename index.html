@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Throw Marianne Around a Box as Ariana Grande Music Plays</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: black;
+            color: white;
+        }
+        #title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #box {
+            width: 300px;
+            height: 300px;
+            border: 2px solid white;
+            position: relative;
+            overflow: hidden;
+        }
+        #marianne {
+            position: absolute;
+            width: 150px;
+            cursor: grab;
+            transition: transform 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="title">Throw Marianne Around a Box as Ariana Grande Music Plays</div>
+
+    <div id="box">
+        <img id="marianne" src="marianne.png" alt="Marianne">
+    </div>
+
+    <audio id="music" src="ariana.mp3" autoplay loop></audio>
+
+    <script>
+        const marianne = document.getElementById('marianne');
+        const box = document.getElementById('box');
+        const music = document.getElementById('music');
+        const crumbleSound = new Audio('crumble.mp3');
+        let crumbleLevel = 0;
+
+        marianne.onmousedown = function(event) {
+            event.preventDefault();
+            const shiftX = event.clientX - marianne.getBoundingClientRect().left;
+            const shiftY = event.clientY - marianne.getBoundingClientRect().top;
+
+            document.onmousemove = function(event) {
+                moveAt(event.pageX, event.pageY);
+                crumbleEffect();
+            };
+
+            document.onmouseup = function() {
+                document.onmousemove = null;
+                marianne.onmouseup = null;
+            };
+
+            function moveAt(pageX, pageY) {
+                const newX = pageX - shiftX - box.offsetLeft;
+                const newY = pageY - shiftY - box.offsetTop;
+
+                // Keep image within the box
+                if (newX >= 0 && newX <= box.offsetWidth - marianne.offsetWidth) {
+                    marianne.style.left = newX + 'px';
+                }
+                if (newY >= 0 && newY <= box.offsetHeight - marianne.offsetHeight) {
+                    marianne.style.top = newY + 'px';
+                }
+            }
+
+            marianne.ondragstart = function() {
+                return false;
+            };
+        };
+
+        function crumbleEffect() {
+            crumbleLevel += 1;
+            if (crumbleLevel % 20 === 0) { // adjust this to change the crumble speed
+                const scale = 1 - crumbleLevel / 1000;
+                marianne.style.transform = `scale(${scale})`;
+                crumbleSound.play();
+            }
+
+            // When fully crumbled
+            if (crumbleLevel >= 800) {
+                marianne.style.display = 'none';
+                document.onmousemove = null; // Stop dragging
+            }
+        }
+    </script>
+
+</body>
+</html>
