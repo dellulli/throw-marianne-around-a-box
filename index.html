@@ -13,6 +13,7 @@
             height: 100vh;
             background-color: black;
             color: white;
+            user-select: none;
         }
         #title {
             font-size: 24px;
@@ -30,6 +31,8 @@
             width: 150px;
             cursor: grab;
             transition: transform 0.1s ease;
+            left: 75px;
+            top: 75px;
         }
     </style>
 </head>
@@ -41,7 +44,7 @@
         <img id="marianne" src="marianne.png" alt="Marianne">
     </div>
 
-    <audio id="music" src="ariana.mp3" autoplay loop></audio>
+    <audio id="music" src="ariana.mp3" loop></audio>
 
     <script>
         const marianne = document.getElementById('marianne');
@@ -49,9 +52,17 @@
         const music = document.getElementById('music');
         const crumbleSound = new Audio('crumble.mp3');
         let crumbleLevel = 0;
+        let musicStarted = false;
 
-        marianne.onmousedown = function(event) {
+        marianne.addEventListener('mousedown', function(event) {
             event.preventDefault();
+
+            // ✅ Start music only on first click
+            if (!musicStarted) {
+                music.play().catch(err => console.log('Audio blocked:', err));
+                musicStarted = true;
+            }
+
             const shiftX = event.clientX - marianne.getBoundingClientRect().left;
             const shiftY = event.clientY - marianne.getBoundingClientRect().top;
 
@@ -62,14 +73,13 @@
 
             document.onmouseup = function() {
                 document.onmousemove = null;
-                marianne.onmouseup = null;
+                document.onmouseup = null;
             };
 
             function moveAt(pageX, pageY) {
                 const newX = pageX - shiftX - box.offsetLeft;
                 const newY = pageY - shiftY - box.offsetTop;
 
-                // Keep image within the box
                 if (newX >= 0 && newX <= box.offsetWidth - marianne.offsetWidth) {
                     marianne.style.left = newX + 'px';
                 }
@@ -78,23 +88,20 @@
                 }
             }
 
-            marianne.ondragstart = function() {
-                return false;
-            };
-        };
+            marianne.ondragstart = () => false;
+        });
 
         function crumbleEffect() {
             crumbleLevel += 1;
-            if (crumbleLevel % 20 === 0) { // adjust this to change the crumble speed
+            if (crumbleLevel % 20 === 0) {
                 const scale = 1 - crumbleLevel / 1000;
                 marianne.style.transform = `scale(${scale})`;
                 crumbleSound.play();
             }
 
-            // When fully crumbled
             if (crumbleLevel >= 800) {
                 marianne.style.display = 'none';
-                document.onmousemove = null; // Stop dragging
+                document.onmousemove = null;
             }
         }
     </script>
